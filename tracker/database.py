@@ -2,15 +2,19 @@ from sqlalchemy import create_engine, Column, Integer, String, DateTime, Foreign
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from datetime import datetime
+from tracker.utils import format_timedelta
 
+# Define the Base
 Base = declarative_base()
 
+# Define the App class
 class App(Base):
     __tablename__ = 'apps'
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True, nullable=False)
     total_usage_time = Column(Integer, default=0)  # Tiempo total de uso en segundos
 
+# Define the Log class
 class Log(Base):
     __tablename__ = 'logs'
     id = Column(Integer, primary_key=True)
@@ -23,8 +27,10 @@ App.logs = relationship('Log', order_by=Log.id, back_populates='app')
 
 # Configuración de la base de datos
 engine = create_engine('sqlite:///data/tracker.db')
-Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
+
+def setup_database():
+    Base.metadata.create_all(engine)
 
 def get_session():
     return Session()
@@ -66,7 +72,6 @@ def update_app_usage_time(session, app_id, usage_time):
         return app
     return None
 
-
 def get_app_id(session, app_name):
     app = session.query(App).filter_by(name=app_name).first()
     if app:
@@ -78,3 +83,11 @@ def get_name_app(session, app_id):
     if app:
         return app.name
     return None
+
+def fetch_logs(session):
+    logs = session.query(Log).all()
+    return [(log.app.name, log.start_time, log.end_time, format_timedelta(int((log.end_time - log.start_time).total_seconds()))) for log in logs]
+
+def fetch_apps(session):
+    apps = session.query(App).all()
+    return [(app.name, format_timedelta(app.total_usage_time)) for app in apps]
