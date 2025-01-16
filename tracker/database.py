@@ -12,6 +12,7 @@ class App(Base):
     __tablename__ = 'apps'
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True, nullable=False)
+    ps_name = Column(String)  # Nombre del proceso en el sistema operativo
     total_usage_time = Column(Integer, default=0)  # Tiempo total de uso en segundos
 
 # Define the Log class
@@ -35,16 +36,16 @@ def setup_database():
 def get_session():
     return Session()
 
-def create_app(session, app_name):
+def create_app(session, app_name, ps_name):
     app = session.query(App).filter_by(name=app_name).first()
     if not app:
-        app = App(name=app_name)
+        app = App(name=app_name, ps_name=ps_name)
         session.add(app)
         session.commit()
     return app
 
 def create_log(session, app_id):
-    log = Log(app_id=app_id, start_time=datetime.now())
+    log = Log(app_id=app_id, start_time=datetime.now().replace(microsecond=0))
     app_name = get_name_app(session, app_id)
     print(f"[START] {app_name} - {log.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
     session.add(log)
@@ -52,15 +53,22 @@ def create_log(session, app_id):
     return log
 
 def close_log(session, app_id):
+    print(f"Intentando cerrar log para app_id: {app_id}")
     log = session.query(Log).filter_by(app_id=app_id).order_by(Log.start_time.desc()).first()
-    if log and log.end_time is None:  
-        log.end_time = datetime.now()
-        app_name = get_name_app(session, app_id)
-        print(f"[CLOSE] {app_name} - {log.end_time.strftime('%Y-%m-%d %H:%M:%S')}")
-        session.commit()
-        usage_time = int((log.end_time - log.start_time).total_seconds()) 
-        update_app_usage_time(session, app_id, usage_time)
-        return log
+    if log:
+        print(f"Log encontrado: {log}")
+        if log.end_time is None:
+            log.end_time = datetime.now().replace(microsecond=0)
+            app_name = get_name_app(session, app_id)
+            print(f"[CLOSE] {app_name} - {log.end_time.strftime('%Y-%m-%d %H:%M:%S')}")
+            session.commit()
+            usage_time = int((log.end_time - log.start_time).total_seconds())
+            update_app_usage_time(session, app_id, usage_time)
+            return log
+        else:
+            print(f"El log ya tiene un end_time: {log.end_time}")
+    else:
+        print("No se encontró ningún log para cerrar.")
     return None
 
 def update_app_usage_time(session, app_id, usage_time):
@@ -72,8 +80,8 @@ def update_app_usage_time(session, app_id, usage_time):
         return app
     return None
 
-def get_app_id(session, app_name):
-    app = session.query(App).filter_by(name=app_name).first()
+def get_app_id(session, ps):
+    app = session.query(App).filter_by(ps_name=ps).first()
     if app:
         return app.id
     return None
@@ -90,4 +98,8 @@ def fetch_logs(session):
 
 def fetch_apps(session):
     apps = session.query(App).all()
-    return [(app.name, format_timedelta(app.total_usage_time)) for app in apps]
+    return [(app.name, app.ps_name, format_timedelta(app.total_usage_time)) for app in apps]
+
+def fetch_processes(session):
+    apps = session.query(App).all()
+    return [app.ps_name for app in apps]

@@ -15,5 +15,10 @@ class Home(tk.Frame):
         
         button2 = tk.Button(self, text="See Apps",
                            command=lambda: controller.show_frame("AppsUI"))
+        
+        button3 = tk.Button(self, text="Add App",
+                            command=lambda: controller.show_frame("AddAppUI"))
+        
         button.pack()
         button2.pack()
+        button3.pack()

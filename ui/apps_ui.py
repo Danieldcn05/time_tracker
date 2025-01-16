@@ -11,17 +11,16 @@ class AppsUI(tk.Frame):
         label = tk.Label(self, text="Apps")
         label.pack(side="top", fill="x", pady=10)
         
-        
         # Tabla para mostrar las apps
-        self.tree = ttk.Treeview(self, columns=("App", "Tiempo de uso"), show="headings")
+        self.tree = ttk.Treeview(self, columns=("App","Nombre del Proceso", "Tiempo de uso" ), show="headings")
         self.tree.heading("App", text="Aplicación")
+        self.tree.heading("Nombre del Proceso", text="Nombre del Proceso")
         self.tree.heading("Tiempo de uso", text="Tiempo de uso")
         self.tree.pack(fill=tk.BOTH, expand=True)
 
         button = tk.Button(self, text="Go to Home",
                            command=lambda: controller.show_frame("Home"))
         button.pack()
-        
         
         self.load_data()
         
