@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Boolean, create_engine, Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from datetime import datetime
@@ -13,7 +13,9 @@ class App(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True, nullable=False)
     ps_name = Column(String)  # Nombre del proceso en el sistema operativo
+    tracking = Column(Boolean, default=False)  # Campo booleano añadido
     total_usage_time = Column(Integer, default=0)  # Tiempo total de uso en segundos
+
 
 # Define the Log class
 class Log(Base):
@@ -100,6 +102,13 @@ def fetch_apps(session):
     apps = session.query(App).all()
     return [(app.name, app.ps_name, format_timedelta(app.total_usage_time)) for app in apps]
 
+def fetch_names(session):
+    apps = session.query(App).all()
+    return [app.name for app in apps]
+
 def fetch_processes(session):
     apps = session.query(App).all()
     return [app.ps_name for app in apps]
+
+def get_app_by_name(session, app_name):
+    return session.query(App).filter_by(name=app_name).first()

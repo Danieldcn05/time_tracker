@@ -35,7 +35,7 @@ def track_applications(apps_to_track):
         session.close()
 
 if __name__ == "__main__":
-    apps_to_track = fetch_processes(get_session()) # "spotify","firefox-bin","chrome"
+    apps_to_track = fetch_processes(get_session()) 
     print("Iniciando rastreo de aplicaciones...")
     print("Procesos rastreados: ", apps_to_track)
     track_applications(apps_to_track)
