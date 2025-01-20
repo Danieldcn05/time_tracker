@@ -62,7 +62,7 @@ class AddAppUI(tk.Frame):
             ps_name = self.app_to_ps_name.get(app_name, "unknown")
             create_app(self.session, app_name, ps_name)
             self.console.config(text="App añadida correctamente", fg="green")
-        elif app_name in trackered_apps:
+        else:
             app = get_app_by_name(self.session, app_name)
             if not app.tracking:
                 app.tracking = True
@@ -70,6 +70,3 @@ class AddAppUI(tk.Frame):
                 self.console.config(text="App añadida correctamente", fg="green")
             else:
                 self.console.config(text="La app ya ha sido añadida", fg="red")
-            
-        else:
-            self.console.config(text="La app ya ha sido añadida", fg="red")

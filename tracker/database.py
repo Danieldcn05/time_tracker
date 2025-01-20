@@ -2,7 +2,7 @@ from sqlalchemy import Boolean, create_engine, Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from datetime import datetime
-from tracker.utils import format_timedelta
+from .utils import format_timedelta
 
 # Define the Base
 Base = declarative_base()
@@ -13,7 +13,7 @@ class App(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True, nullable=False)
     ps_name = Column(String)  # Nombre del proceso en el sistema operativo
-    tracking = Column(Boolean, default=False)  # Campo booleano añadido
+    tracking = Column(Boolean, default=False)  
     total_usage_time = Column(Integer, default=0)  # Tiempo total de uso en segundos
 
 
@@ -100,15 +100,28 @@ def fetch_logs(session):
 
 def fetch_apps(session):
     apps = session.query(App).all()
-    return [(app.name, app.ps_name, format_timedelta(app.total_usage_time)) for app in apps]
+    return [(app.name, app.ps_name,app.tracking, format_timedelta(app.total_usage_time)) for app in apps]
 
 def fetch_names(session):
     apps = session.query(App).all()
     return [app.name for app in apps]
 
-def fetch_processes(session):
+def fetch_processes(session): # Devuelve los nombres de TODOS los procesos
     apps = session.query(App).all()
+    return [app.ps_name for app in apps]
+
+def fecth_tracked_ps(session):
+    apps = session.query(App).filter_by(tracking=True).all()
     return [app.ps_name for app in apps]
 
 def get_app_by_name(session, app_name):
     return session.query(App).filter_by(name=app_name).first()
+
+def toggle_tracking(session, ps_name):
+    app = session.query(App).filter_by(ps_name=ps_name).first()
+    if app:
+        app.tracking = not app.tracking
+        session.commit()
+        return app
+    return None
+    
