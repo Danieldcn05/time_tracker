@@ -12,15 +12,18 @@ class MainWindow:
         self.root.title("Time Tracker")
         self.root.resizable(False, False)
         self.root.geometry("1200x700")
+        
+        # Set background color
+        self.bg_color = "#F6F8FA"  # Change this to your desired color
 
-        # Contenedor principal
-        self.container = tk.Frame(root)
+        # Main container
+        self.container = tk.Frame(root, bg=self.bg_color)
         self.container.pack(fill="both", expand=True)
 
         self.frames = {}
-        for F in (LogsUI, Home, AppsUI, AddAppUI):  # AÑADIR NUEVAS VISTAS AQUÍ
+        for F in (LogsUI, Home, AppsUI, AddAppUI):  # ADD NEW VIEWS HERE
             page_name = F.__name__
-            frame = F(parent=self.container, controller=self, session=session)
+            frame = F(parent=self.container, controller=self, session=session, bg=self.bg_color)
             self.frames[page_name] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
@@ -30,6 +33,6 @@ class MainWindow:
         frame = self.frames[page_name]
         frame.tkraise()
 
-        # Configurar el contenedor para que se expanda y llene todo el espacio disponible
+        # Configure the container to expand and fill all available space
         self.container.grid_rowconfigure(0, weight=1)
         self.container.grid_columnconfigure(0, weight=1)
